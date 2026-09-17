@@ -1,18 +1,19 @@
 /**
- * PDF ochish va yuklab olish uchun xavfsiz yordamchi funksiyalar.
- * Brauzer Popup Blocker tomonidan window.open bloklanishini oldini oladi.
+ * PDF fayllarni yuklab olmasdan, yangi tabda Blob asosida to'liq ekranda ochish.
+ * Brauzer Popup Blocker bloklashini oldini olish uchun oyna foydalanuvchi bosishi bilanoq ochiladi.
  */
 
-export const createPreOpenedWindow = (title = "PDF yuklanmoqda...") => {
+export const openPdfViewer = (title = "Hujjat") => {
+  let newTab = null;
   try {
-    const win = window.open("about:blank", "_blank");
-    if (win) {
-      win.document.write(`
+    newTab = window.open("about:blank", "_blank");
+    if (newTab) {
+      newTab.document.write(`
         <!DOCTYPE html>
         <html>
           <head>
             <meta charset="utf-8">
-            <title>${title}</title>
+            <title>${title} - Yuklanmoqda...</title>
             <style>
               body {
                 margin: 0;
@@ -41,9 +42,7 @@ export const createPreOpenedWindow = (title = "PDF yuklanmoqda...") => {
                 animation: spin 0.8s linear infinite;
                 margin: 0 auto 16px;
               }
-              @keyframes spin {
-                to { transform: rotate(360deg); }
-              }
+              @keyframes spin { to { transform: rotate(360deg); } }
             </style>
           </head>
           <body>
@@ -56,47 +55,60 @@ export const createPreOpenedWindow = (title = "PDF yuklanmoqda...") => {
         </html>
       `);
     }
-    return win;
-  } catch {
-    return null;
-  }
-};
-
-export const openOrDownloadPdf = (blobData, fileName = "hujjat.pdf", preOpenedWindow = null) => {
-  const blob = new Blob([blobData], { type: "application/pdf" });
-  const url = window.URL.createObjectURL(blob);
-
-  let opened = false;
-
-  // 1. Agar oldindan sinxron ochilgan oyna bo'lsa, unga yo'naltiramiz
-  if (preOpenedWindow && !preOpenedWindow.closed) {
-    try {
-      preOpenedWindow.location.href = url;
-      opened = true;
-    } catch (e) {
-      console.warn("Pre-opened window navigation failed:", e);
-    }
+  } catch (e) {
+    console.warn("Could not pre-open window:", e);
   }
 
-  // 2. Agar yo'q bo'lsa, window.open orqali ochishga harakat qilamiz
-  if (!opened) {
-    try {
-      const win = window.open(url, "_blank");
-      if (win && !win.closed && typeof win.closed !== "undefined") {
-        opened = true;
+  return {
+    show: (blobData) => {
+      const blob = new Blob([blobData], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+
+      if (newTab && !newTab.closed) {
+        try {
+          newTab.document.open();
+          newTab.document.write(`
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <meta charset="utf-8">
+                <title>${title}</title>
+                <style>
+                  html, body {
+                    margin: 0;
+                    padding: 0;
+                    width: 100%;
+                    height: 100%;
+                    overflow: hidden;
+                    background-color: #525659;
+                  }
+                  iframe {
+                    width: 100%;
+                    height: 100%;
+                    border: none;
+                    display: block;
+                  }
+                </style>
+              </head>
+              <body>
+                <iframe src="${url}" type="application/pdf"></iframe>
+              </body>
+            </html>
+          `);
+          newTab.document.close();
+          return;
+        } catch (err) {
+          console.warn("Failed to write iframe to newTab:", err);
+        }
       }
-    } catch (e) {
-      console.warn("Direct window.open failed:", e);
-    }
-  }
 
-  // 3. Agar brauzer popup'ni bloklagan bo'lsa, to'g'ridan-to'g'ri yuklab olish (download) qilamiz
-  if (!opened) {
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  }
+      // Fallback agar popup dastlab ochilmagan bo'lsa
+      window.open(url, "_blank");
+    },
+    close: () => {
+      if (newTab && !newTab.closed) {
+        newTab.close();
+      }
+    },
+  };
 };
