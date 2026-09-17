@@ -385,7 +385,7 @@ const PublicContractDetail = () => {
                             </linearGradient>
                         </defs>
                     </svg>
-                    <span>«MEGA BUILDING» MCHJ</span>
+                    <span>«ArdentSoft» MCHJ</span>
                 </div>
                 <div className="contract-badge-wrapper">
                     <span className="contract-title">SHARTNOMA RAQAMI: #{contract.contract_number}</span>
