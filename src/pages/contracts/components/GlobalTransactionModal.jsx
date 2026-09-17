@@ -5,7 +5,7 @@ import { contractService } from '../../../services/contracts';
 import Modal from '../../../components/ui/Modal';
 import { DollarSignIcon, DownloadIcon, EditIcon, SaveIcon, CloseIcon } from '../ContractIcons';
 import { toast } from 'sonner';
-import { openPdfViewer } from '../../../utils/pdfHelper';
+import { downloadPdf } from '../../../utils/pdfHelper';
 
 const GlobalTransactionModal = ({ isOpen, onClose, contractId, formatPrice }) => {
     const [transactions, setTransactions] = useState([]);
@@ -36,15 +36,13 @@ const GlobalTransactionModal = ({ isOpen, onClose, contractId, formatPrice }) =>
 
     const handleDownloadPdf = async (transactionId) => {
         setDownloadingId(transactionId);
-        const viewer = openPdfViewer(`Kvitansiya-${transactionId}`);
-        toast.loading("Kvitansiya tayyorlanmoqda...", { id: 'receipt-loading' });
+        toast.loading("Kvitansiya yuklab olinmoqda...", { id: 'receipt-loading' });
         try {
             const response = await contractService.downloadTransactionPdf(contractId, transactionId);
-            viewer.show(response.data);
+            downloadPdf(response.data, `kvitansiya-${transactionId}.pdf`);
             toast.dismiss('receipt-loading');
-            toast.success("Kvitansiya ochildi");
+            toast.success("Kvitansiya yuklab olindi!");
         } catch (error) {
-            viewer.close();
             console.error("PDF yuklashda xatolik:", error);
             toast.dismiss('receipt-loading');
             toast.error("PDF yaratishda xatolik yuz berdi");

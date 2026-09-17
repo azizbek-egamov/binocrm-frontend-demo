@@ -17,7 +17,7 @@ import './Contracts.css';
 import usePageTitle from '../../hooks/usePageTitle';
 import ContractFilterDrawer from './components/ContractFilterDrawer';
 import { useAuth } from '../../context/AuthContext';
-import { openPdfViewer } from '../../utils/pdfHelper';
+import { downloadPdf } from '../../utils/pdfHelper';
 
 const ContractsList = () => {
     usePageTitle('Shartnomalar');
@@ -185,17 +185,15 @@ const ContractsList = () => {
     // PDF yuklab olish
     const handleDownloadPdf = async (contractId, e) => {
         e?.stopPropagation();
-        const viewer = openPdfViewer(`Shartnoma-${contractId}`);
         try {
-            toast.loading("PDF yaratilmoqda...", { id: `pdf-${contractId}` });
+            toast.loading("PDF yuklab olinmoqda...", { id: `pdf-${contractId}` });
 
             const response = await contractService.downloadPdf(contractId);
-            viewer.show(response.data);
+            downloadPdf(response.data, `shartnoma-${contractId}.pdf`);
 
             toast.dismiss(`pdf-${contractId}`);
-            toast.success("PDF tayyor!");
+            toast.success("PDF yuklab olindi!");
         } catch (error) {
-            viewer.close();
             toast.dismiss(`pdf-${contractId}`);
             toast.error("PDF yaratishda xatolik");
             console.error(error);

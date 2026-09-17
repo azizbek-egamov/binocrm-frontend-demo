@@ -22,7 +22,7 @@ import PaymentModalForm from "./components/PaymentModalForm";
 import CustomPaymentModal from "./components/CustomPaymentModal";
 import GlobalTransactionModal from "./components/GlobalTransactionModal";
 import AdminEditModal from "./components/AdminEditModal";
-import { openPdfViewer } from "../../utils/pdfHelper";
+import { downloadPdf } from "../../utils/pdfHelper";
 
 const ContractSchedule = () => {
   const { id } = useParams();
@@ -388,18 +388,16 @@ const ContractSchedule = () => {
 
   // PDF yuklab olish
   const handleDownloadPdf = async () => {
-    const viewer = openPdfViewer(`Shartnoma-${contract?.contract_number || id}`);
     try {
       setProcessingId("pdf");
-      toast.loading("PDF yaratilmoqda...", { id: "pdf-loading" });
+      toast.loading("PDF yuklab olinmoqda...", { id: "pdf-loading" });
 
       const response = await contractService.downloadPdf(id);
-      viewer.show(response.data);
+      downloadPdf(response.data, `shartnoma-${contract?.contract_number || id}.pdf`);
 
       toast.dismiss("pdf-loading");
-      toast.success("PDF tayyor!");
+      toast.success("PDF yuklab olindi!");
     } catch (error) {
-      viewer.close();
       toast.dismiss("pdf-loading");
       toast.error("PDF yaratishda xatolik");
       console.error(error);
@@ -410,18 +408,16 @@ const ContractSchedule = () => {
 
   // To'lov jadvali PDF
   const handleSchedulePdf = async () => {
-    const viewer = openPdfViewer(`Jadval-${contract?.contract_number || id}`);
     try {
       setProcessingId("schedule-pdf");
-      toast.loading("Jadval PDF yaratilmoqda...", { id: "schedule-pdf-loading" });
+      toast.loading("Jadval PDF yuklab olinmoqda...", { id: "schedule-pdf-loading" });
 
       const response = await contractService.downloadSchedulePdf(id);
-      viewer.show(response.data);
+      downloadPdf(response.data, `jadval-${contract?.contract_number || id}.pdf`);
 
       toast.dismiss("schedule-pdf-loading");
-      toast.success("Jadval PDF tayyor!");
+      toast.success("Jadval PDF yuklab olindi!");
     } catch (error) {
-      viewer.close();
       toast.dismiss("schedule-pdf-loading");
       toast.error("Jadval PDF yaratishda xatolik");
       console.error(error);
@@ -432,18 +428,16 @@ const ContractSchedule = () => {
 
   // To'lov grafigi (rasmiy format)
   const handleGrafikPdf = async () => {
-    const viewer = openPdfViewer(`Grafik-${contract?.contract_number || id}`);
     try {
       setProcessingId("grafik-pdf");
-      toast.loading("To'lov grafigi yaratilmoqda...", { id: "grafik-pdf-loading" });
+      toast.loading("To'lov grafigi yuklab olinmoqda...", { id: "grafik-pdf-loading" });
 
       const response = await contractService.downloadGrafikPdf(id);
-      viewer.show(response.data);
+      downloadPdf(response.data, `grafik-${contract?.contract_number || id}.pdf`);
 
       toast.dismiss("grafik-pdf-loading");
-      toast.success("To'lov grafigi tayyor!");
+      toast.success("To'lov grafigi yuklab olindi!");
     } catch (error) {
-      viewer.close();
       toast.dismiss("grafik-pdf-loading");
       toast.error("To'lov grafigi yaratishda xatolik");
       console.error(error);
